@@ -1839,6 +1839,8 @@ module.exports = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ExampleComponent_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ExampleComponent.vue */ "./resources/js/components/ExampleComponent.vue");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
 //
 //
 //
@@ -1892,12 +1894,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       //display_value: "8 + 3 x 2 - ( 2 - 1 ) + ( 9 / 2 + 3 )",
       display_value: "8 + ( 2 - 2 )",
-      //portioned_display_value: "8 + 3 x 2 - 5",
+      equation: "",
+      result: "",
       prev_display_value: "1 + 2 + 3 - 4 = 2",
       guest_history: [{
         id: 1,
@@ -1909,12 +1913,15 @@ __webpack_require__.r(__webpack_exports__);
         id: 3,
         content: "4 + ( 2 + 3 ) x 2 = 14"
       }],
-      display_has_number_now: false
+      display_has_number_now: false,
+      site_url: "http://localhost:8000",
+      guest_id: 0
     };
   },
   components: {
     example_component: _ExampleComponent_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
   },
+  props: ["ip"],
   methods: {
     keyVal: function keyVal(val) {
       var equation = this.display_value;
@@ -1959,10 +1966,15 @@ __webpack_require__.r(__webpack_exports__);
           break;
 
         case "=":
+          this.equation = this.display_value;
           var result = this.calculateResult(this.display_value);
-          this.prev_display_value = equation + " = " + result;
+          this.result = result;
+          this.prev_display_value = this.equation + " = " + this.result;
           this.display_value = result;
-          this.updateGuestHistory(this.prev_display_value);
+          this.updateGuestHistory();
+          /* Save the result in database */
+
+          this.postHistory();
           break;
 
         default:
@@ -1985,10 +1997,15 @@ __webpack_require__.r(__webpack_exports__);
     calculateResult: function calculateResult() {
       return this.calculator();
     },
-    updateGuestHistory: function updateGuestHistory(result) {
+    loadGuestHistory: function loadGuestHistory() {
+      console.log(this.getHistory());
+      this.guest_history = this.getHistory();
+    },
+    updateGuestHistory: function updateGuestHistory() {
       this.guest_history.push({
         id: this.guest_history.length + 1,
-        content: result
+        equation: this.equation,
+        result: this.result
       });
     },
     hasSpaceBefore: function hasSpaceBefore() {
@@ -2307,13 +2324,73 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       return val; //return 0
+    },
+    getGuest: function getGuest() {
+      var _this = this;
+
+      var axiosConfig = {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      };
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post(this.site_url + '/api/guest-history/get-guest', {
+        'ip': this.ip
+      }, axiosConfig).then(function (response) {
+        _this.guest_id = response.data.guest_id;
+        console.log(response);
+        return response.data;
+      })["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    getHistory: function getHistory() {
+      var _this2 = this;
+
+      console.log('called getHistory');
+      var axiosConfig = {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      };
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post(this.site_url + '/api/guest-history/get-history', {
+        'guest_id': this.guest_id
+      }, axiosConfig).then(function (response) {
+        _this2.guest_history = response.data.guest_history;
+        console.log(response.data);
+        return response.data;
+      })["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    postHistory: function postHistory() {
+      var axiosConfig = {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      };
+      axios__WEBPACK_IMPORTED_MODULE_1___default.a.post(this.site_url + '/api/guest-history/post-history', {
+        'guest_id': this.guest_id,
+        'equation': this.equation,
+        'result': this.result
+      }, axiosConfig).then(function (response) {
+        console.log(response.data);
+        return response.data;
+      })["catch"](function (error) {
+        console.log(error);
+      });
     }
   },
-  created: function created() {//console.log('Calculator created.')
+  created: function created() {
+    this.getGuest();
   },
-  mounted: function mounted() {//console.log(this.calculate([10,2], "+"))
-    //console.log(this.numberOperatorSegmentation("8 + 3 x 2 - 5"))
-    //console.log(this.solvePriority(["1", "3", "2"], ["+", "x"]))
+  mounted: function mounted() {
+    setTimeout(this.getHistory, 100);
   }
 });
 
@@ -38554,7 +38631,10 @@ var render = function() {
             _vm._l(_vm.guest_history, function(history_content) {
               return _c("li", { key: history_content.id }, [
                 _vm._v(
-                  _vm._s(history_content.content) + "\n                    "
+                  _vm._s(history_content.equation) +
+                    " = " +
+                    _vm._s(history_content.result) +
+                    "\n                    "
                 )
               ])
             }),
@@ -38571,7 +38651,7 @@ var staticRenderFns = [
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
     return _c("div", { staticClass: "card-header" }, [
-      _c("h5", { staticClass: "text-center" }, [_vm._v("Calculator History")])
+      _c("h5", { staticClass: "text-center" }, [_vm._v("History")])
     ])
   }
 ]

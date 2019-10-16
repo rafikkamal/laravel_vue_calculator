@@ -37,11 +37,11 @@
             </div>
             <div class="col-md-6">
                 <div class="card-header">
-                    <h5 class="text-center">Calculator History</h5>
+                    <h5 class="text-center">History</h5>
                 </div>
                 <div class="card-body history">
                     <ul>
-                        <li v-for="history_content in guest_history" :key="history_content.id">{{history_content.content}}
+                        <li v-for="history_content in guest_history" :key="history_content.id">{{history_content.equation}} = {{history_content.result}}
                         </li>
                     </ul>
                 </div>
@@ -51,13 +51,16 @@
 </template>
 
 <script>
-import example_component from './ExampleComponent.vue';
+import example_component from './ExampleComponent.vue'
+import axios from 'axios'
+
 export default {
     data: function() {
         return {
             //display_value: "8 + 3 x 2 - ( 2 - 1 ) + ( 9 / 2 + 3 )",
             display_value: "8 + ( 2 - 2 )",
-            //portioned_display_value: "8 + 3 x 2 - 5",
+            equation: "",
+            result: "",
             prev_display_value: "1 + 2 + 3 - 4 = 2",
             guest_history: [
                 {
@@ -73,12 +76,15 @@ export default {
                     content: "4 + ( 2 + 3 ) x 2 = 14"
                 }
             ],
-            display_has_number_now: false
+            display_has_number_now: false,
+            site_url: "http://localhost:8000",
+            guest_id: 0 
         }
     },
     components: {
         example_component
     },
+    props: ["ip"],
     methods: {
         keyVal: function(val) {
             var equation = this.display_value
@@ -116,10 +122,14 @@ export default {
                     this.display_value += val
                     break
                 case "=":
+                    this.equation = this.display_value
                     let result = this.calculateResult(this.display_value)
-                    this.prev_display_value = equation + " = "+result
+                    this.result = result
+                    this.prev_display_value = this.equation + " = "+this.result
                     this.display_value = result
-                    this.updateGuestHistory(this.prev_display_value)
+                    this.updateGuestHistory()
+                    /* Save the result in database */
+                    this.postHistory()
                     break
                 default:
                     if(val >= 0 && val <=9) {
@@ -140,10 +150,15 @@ export default {
         calculateResult: function() {
             return this.calculator()
         },
-        updateGuestHistory: function(result) {
+        loadGuestHistory: function() {
+            console.log(this.getHistory());
+            this.guest_history = this.getHistory();
+        },
+        updateGuestHistory: function() {
             this.guest_history.push({ 
                 id: this.guest_history.length + 1,
-                content: result
+                equation: this.equation,
+                result: this.result
             });
         },
         hasSpaceBefore: function() {
@@ -459,15 +474,75 @@ export default {
             return val
 
             //return 0
+        },
+        getGuest: function() {
+            let axiosConfig = {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+              }
+            }
+            axios.post(this.site_url+'/api/guest-history/get-guest', {
+              'ip': this.ip,
+            }, axiosConfig)
+            .then((response) => {
+                this.guest_id = response.data.guest_id
+                console.log(response)
+                return response.data
+            })
+            .catch(error => {
+              console.log(error)
+            })
+        },
+        getHistory: function() {
+            console.log('called getHistory')
+            let axiosConfig = {
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+              }
+            }
+            axios.post(this.site_url+'/api/guest-history/get-history', {
+              'guest_id': this.guest_id,
+            }, axiosConfig)
+            .then((response) => {
+                this.guest_history = response.data.guest_history
+                console.log(response.data)
+                return response.data
+            })
+            .catch(error => {
+              console.log(error)
+            })
+        },
+        postHistory: function() {
+            let axiosConfig = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            }
+            axios.post(this.site_url+'/api/guest-history/post-history', {
+                'guest_id': this.guest_id,
+                'equation': this.equation,
+                'result': this.result
+            }, axiosConfig)
+            .then((response) => {
+                console.log(response.data)
+                return response.data
+            })
+            .catch(error => {
+              console.log(error)
+            })
         }
     },
     created() {
-        //console.log('Calculator created.')
+        this.getGuest()
     },
     mounted() {
-        //console.log(this.calculate([10,2], "+"))
-        //console.log(this.numberOperatorSegmentation("8 + 3 x 2 - 5"))
-        //console.log(this.solvePriority(["1", "3", "2"], ["+", "x"]))
+        setTimeout(this.getHistory, 100)
     }
 }
 </script>

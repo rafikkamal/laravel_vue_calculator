@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+
+Route::group(['prefix'=>'guest-history', 'middleware' => 'api'], function() {
+	Route::post('get-guest', 'Api\GuestHistoryController@getGuest');
+	Route::post('get-history', 'Api\GuestHistoryController@getHistory');
+	Route::post('post-history', 'Api\GuestHistoryController@postHistory');
 });

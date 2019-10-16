@@ -19,7 +19,7 @@
     <body>
         <h1>Calculator</h1>
         <div id="app">
-            <calculator/>
+            <calculator ip="{{$_SERVER['REMOTE_ADDR']}}"/>
         </div>
         <script src="{{ asset('js/app.js') }}"></script>
     </body>
