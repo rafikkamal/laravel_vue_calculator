@@ -1906,7 +1906,8 @@ __webpack_require__.r(__webpack_exports__);
       guest_history: [],
       display_has_number_now: false,
       site_url: "http://localhost:8000",
-      guest_id: 0
+      guest_id: 0,
+      display_pipe: true
     };
   },
   components: {
@@ -2069,7 +2070,15 @@ __webpack_require__.r(__webpack_exports__);
     },
     numberOperatorSegmentation: function numberOperatorSegmentation(str) {
       var has_priority = false;
-      var str_arr = str.split(" "); //console.log(str_arr)
+      var str_arr = str.split(" "); // console.log("str_arr : "+str_arr.toString())
+
+      if (str_arr[0] == "" || str_arr[0] == " ") {
+        console.log("!!! error found");
+        str_arr = str_arr.slice(1, str_arr.length); // console.log("!!! modified str_arr : "+str_arr.toString())
+      } // console.log("!!! modified str_arr : "+str_arr.toString())
+
+
+      str_arr = this.checkForNan(str_arr); //console.log(str_arr)
 
       var defined_operators_arr = ["+", "-", "/", "x", "%", "(", ")"];
       var operators_arr = [];
@@ -2085,8 +2094,7 @@ __webpack_require__.r(__webpack_exports__);
       var len = str_arr.length;
 
       for (var k = 0; k < len; k++) {
-        var seg = str_arr[k];
-        console.log("working with segment: " + seg);
+        var seg = str_arr[k]; // console.log(k+") working with segment: "+seg)
 
         if (defined_operators_arr.includes(seg)) {
           if (data_processing == false) {
@@ -2105,13 +2113,15 @@ __webpack_require__.r(__webpack_exports__);
             });
           } else if (["(", ")"].includes(seg)) {
             if (seg == "(") {
-              parenthesis_start_arr.push(operators_arr.length - 1); // parenthesis_start_num_arr.push(numbers_arr.length)
+              parenthesis_start_arr.push(operators_arr.length - 1);
+              parenthesis_start_num_arr.push(numbers_arr.length); // parenthesis_start_num_arr.push(numbers_arr.length-1)
 
-              parenthesis_start_num_arr.push(numbers_arr.length - 1);
               console.log("() start ( ");
-              console.log("() optr index: " + (operators_arr.length - 1));
-              console.log("() num index: n" + (numbers_arr.length - 1));
-              console.log("() num value: " + numbers_arr[numbers_arr.length - 1]);
+              console.log("() optr index: " + (operators_arr.length - 1)); //console.log("() num index: n"+(numbers_arr.length - 1))
+
+              console.log("() num index: n" + numbers_arr.length); // console.log("() num value: "+numbers_arr[numbers_arr.length - 1])
+
+              console.log("() num value: " + numbers_arr[numbers_arr.length]);
               console.log("() end ( ");
               console.log("() *************");
             } else if (seg == ")") {
@@ -2121,6 +2131,8 @@ __webpack_require__.r(__webpack_exports__);
               console.log("() optr index: " + (operators_arr.length - 1));
               console.log("() num index: n" + (numbers_arr.length - 1));
               console.log("() num value: " + numbers_arr[numbers_arr.length - 1]);
+              console.log("() numbers_arr: " + numbers_arr.toString());
+              console.log("() operators_arr: " + operators_arr.toString());
               console.log("() end ) ");
             }
           }
@@ -2189,34 +2201,49 @@ __webpack_require__.r(__webpack_exports__);
       };
     },
     unset: function unset(array, index) {
-      console.log("inside unset");
-      console.log(array);
-      console.log("index: " + index);
+      console.log("<<>> inside unset");
+      console.log("<<>> array: " + array.toString());
+      console.log("<<>> index: " + index);
       var len = array.length;
 
+      if (len == 1) {
+        console.log("<<>> the lenght of array is 1");
+        return [];
+      }
+
       if (index < 0 || index > len) {
+        console.log("<<!>> <<<<<<<<<<<<<<<>>>");
+        console.log("<<!>> From unset()");
+        console.log("<<!>> Error for index " + index);
+        console.log("<<!>> Error for array length: " + len);
+        console.log("<<!>> array: " + array.toString());
+        console.log("<<!>> out of unset()");
+        console.log("<<!>> <<<<<<<<<<<<<<<>>>");
+        console.log(" ");
         return array;
       }
 
       var new_arr = [];
 
       if (index == 0) {
+        console.log("<<>> the index of array is 0");
         new_arr = array.slice(1, len);
       } else if (index == len - 1) {
+        console.log("<<>> the index of array is last: " + index);
         new_arr = array.slice(0, len - 1);
       } else {
         var arr_2 = array.slice(index + 1, len);
         var arr_1 = array.slice(0, index);
-        console.log("arr_1");
-        console.log(arr_1);
-        console.log("arr_2");
-        console.log(arr_2);
+        console.log("<<>> arr_1: " + arr_1.toString());
+        console.log("<<>> arr_2: " + arr_2.toString());
         new_arr = arr_1.concat(arr_2);
       }
 
-      console.log("after unset");
-      console.log(new_arr);
-      console.log("left unset");
+      console.log("<<>> after unset");
+      console.log("<<>> new_arr: " + new_arr.toString());
+      console.log("<<>> left unset");
+      console.log("<<>> ****************");
+      console.log("<<>> ");
       return new_arr;
     },
     fixArrayIndex: function fixArrayIndex() {
@@ -2274,6 +2301,7 @@ __webpack_require__.r(__webpack_exports__);
       console.log("calculator - end");
 
       if (data['parenthesis_arr'].parenthesis_start_arr.length > 0) {
+        console.log("<<>> will check parenthesis");
         var pare_start_arr = data['parenthesis_arr'].parenthesis_start_arr;
         var pare_end_arr = data['parenthesis_arr'].parenthesis_end_arr;
         var pare_start_num_arr = data['parenthesis_arr'].parenthesis_start_num_arr;
@@ -2285,6 +2313,7 @@ __webpack_require__.r(__webpack_exports__);
           var optr_slice_length = pare_end_arr[i] - pare_start_arr[i] - 1; // var operators_arr_new = array_slice(operators_arr, $pare_start_arr[i] + 1, optr_slice_length)
 
           var operators_arr_new = operators_arr.slice(pare_start_arr[i] + 1, pare_end_arr[i]);
+          console.log("<<!>> operators_arr_new: " + operators_arr_new.toString());
           console.log("for parenthesis - start ************************");
           console.log("operators_arr_new");
           console.log("pare_start_arr[i]: " + pare_start_arr[i]);
@@ -2295,6 +2324,7 @@ __webpack_require__.r(__webpack_exports__);
           var num_slice_length = optr_slice_length + 1; // var numbers_arr_new = array_slice($numbers_arr, $pare_start_num_arr[$i], num_slice_length)
 
           var numbers_arr_new = numbers_arr.slice(pare_start_num_arr[i], pare_end_num_arr[i] + 1);
+          console.log("<<!>> numbers_arr_new: " + numbers_arr_new.toString());
           console.log("for parenthesis - start **************************");
           console.log("numbers_arr_new");
           console.log(numbers_arr_new);
@@ -2304,6 +2334,8 @@ __webpack_require__.r(__webpack_exports__);
           var data_new = this.solvePriority(numbers_arr_new, operators_arr_new);
           numbers_arr_new = data_new['numbers'];
           operators_arr_new = data_new['operators'];
+          console.log("<<!>> 485 operators_arr_new: " + operators_arr_new.toString());
+          console.log("<<!>> numbers_arr_new: " + numbers_arr_new.toString());
 
           if (numbers_arr_new.length == 1 && operators_arr_new.length == 0) {
             val = numbers_arr_new[0];
@@ -2311,18 +2343,65 @@ __webpack_require__.r(__webpack_exports__);
             val = this.calculateValue(numbers_arr_new, operators_arr_new);
           }
 
+          console.log("<<!>> 496 numbers_arr: " + numbers_arr.toString());
           numbers_arr[pare_start_num_arr[i]] = val;
+          console.log("<<!>> 500 numbers_arr: " + numbers_arr.toString());
+          console.log("<<!>> pare_start_num_arr[i]: " + pare_start_num_arr[i]);
+          console.log("<<!>> pare end index: " + (pare_start_num_arr[i] + num_slice_length));
+          console.log("<<!>> val: " + val);
+          console.log("<<!>> numbers_arr_new: " + numbers_arr_new.toString());
+          console.log("<<!>> ++++++++++++++++++"); // for(var j = pare_start_num_arr[i] + 1; j < pare_start_num_arr[i]+num_slice_length; j++) {
+          //     numbers_arr = this.unset(numbers_arr, j)
+          //     console.log("<<!>> working with index j :"+j)
+          //     console.log("<<>> checking parenthesis, unseting numbers_arr")
+          //     console.log("<<>> j :"+j)
+          //     console.log("<<!>> numbers_arr: "+numbers_arr.toString())
+          //     console.log("<<!>> ----------------")
+          //     console.log("<<>> ")
+          // }
 
-          for (var j = pare_start_num_arr[i] + 1; j < pare_start_num_arr[i] + num_slice_length; j++) {
+          console.log("<<*>>");
+          console.log("<<*>> for the index i: " + i);
+          console.log("<<*>> pare start index: " + pare_start_num_arr[i]);
+          console.log("<<*>> pare end index: " + pare_end_num_arr[i]);
+          console.log("<<*>>"); // for(var j = pare_start_num_arr[i]+num_slice_length; j > pare_start_num_arr[i]; j--) {
+
+          for (var j = pare_end_num_arr[i]; j > pare_start_num_arr[i]; j--) {
             numbers_arr = this.unset(numbers_arr, j);
+            console.log("<<!>> working with index j :" + j);
+            console.log("<<>> checking parenthesis, unseting numbers_arr");
+            console.log("<<>> j :" + j);
+            console.log("<<!>> numbers_arr: " + numbers_arr.toString());
+            console.log("<<!>> ----------------");
+            console.log("<<>> ");
           }
 
-          for (var j = pare_start_arr[i]; j <= pare_start_arr[i] + optr_slice_length + 1; j++) {
+          console.log("<<!>> 514 numbers_arr: " + numbers_arr.toString()); // for(var j = pare_start_arr[i]; j <= pare_start_arr[i]+optr_slice_length+1; j++) {
+          //     operators_arr = this.unset(operators_arr, j)
+          //     console.log("<<>> checking parenthesis, unseting operators_arr")
+          //     console.log("<<>> j :"+j)
+          //     console.log("<<>> operators_arr: "+operators_arr.toString())
+          //     console.log("<<>> ----------------")
+          //     console.log("<<>> ")
+          // }
+          // for(var j = pare_start_arr[i]+optr_slice_length; j > pare_start_arr[i]; j--) {
+
+          for (var j = pare_end_arr[i]; j >= pare_start_arr[i]; j--) {
             operators_arr = this.unset(operators_arr, j);
+            console.log("<<>> checking parenthesis, unseting operators_arr");
+            console.log("<<>> j :" + j);
+            console.log("<<>> operators_arr: " + operators_arr.toString());
+            console.log("<<>> ----------------");
+            console.log("<<>> ");
           }
+
+          console.log("<<!>> 525 operators_arr: " + operators_arr.toString());
+          console.log("<<!>> ----------------");
         }
       }
 
+      console.log("<<!>> operators_arr: " + operators_arr.toString());
+      console.log("<<!>> numbers_arr: " + numbers_arr.toString());
       console.log(operators_arr);
       console.log(numbers_arr);
       /**
@@ -2407,10 +2486,17 @@ __webpack_require__.r(__webpack_exports__);
       })["catch"](function (error) {
         console.log(error);
       });
+    },
+    togglePipeInDisplay: function togglePipeInDisplay() {
+      var self = this;
+      setInterval(function () {
+        self.display_pipe = !self.display_pipe;
+      }, 500);
     }
   },
   created: function created() {
     this.getGuest();
+    this.togglePipeInDisplay();
   },
   mounted: function mounted() {
     setTimeout(this.getHistory, 100);
@@ -6909,7 +6995,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\ndiv.calculator[data-v-625bc6ad] {\n    margin-top: 60px;\n}\ndiv.display[data-v-625bc6ad] {\n    text-align: right;\n}\ndiv.display p[data-v-625bc6ad], div.history[data-v-625bc6ad], div.keys[data-v-625bc6ad] {\n    font-family: 'Orbitron', sans-serif;\n}\ndiv.display p[data-v-625bc6ad]:first-child {\n    font-size: 12px;\n}\ndiv.display p[data-v-625bc6ad]:last-child {\n    background: #ADD8E6;\n    font-size: 28px;\n    line-height: 36px;\n    color: #fff;\n    padding: 4px 15px 0px 15px;\n    height: 36px;\n    overflow: hidden;\n}\ndiv.keys[data-v-625bc6ad] {\n    margin-top: 30px;\n    text-align: center;\n}\ndiv.keys button[data-v-625bc6ad] {\n    width: 23%;\n    margin-bottom: 5px;\n    background: #181a1b;\n    border-radius: 5px;\n}\ndiv.keys button[data-v-625bc6ad]:hover {\n    cursor: pointer;\n}\ndiv.history ul[data-v-625bc6ad] {\n    list-style-type: none;\n    max-height: 315px;\n    overflow-y: scroll;\n    padding: 0px;\n}\n[data-v-625bc6ad]::-webkit-scrollbar {\n  width: 5px;\n}\ndiv.history ul li[data-v-625bc6ad] {\n    padding: 10px;\n    border-bottom: 1px solid #ADD8E6;\n}\n", ""]);
+exports.push([module.i, "\ndiv.calculator[data-v-625bc6ad] {\n    margin-top: 60px;\n}\ndiv.display[data-v-625bc6ad] {\n    text-align: right;\n}\ndiv.display p[data-v-625bc6ad], div.history[data-v-625bc6ad], div.keys[data-v-625bc6ad] {\n    font-family: 'Orbitron', sans-serif;\n}\ndiv.display p[data-v-625bc6ad]:first-child {\n    font-size: 12px;\n}\ndiv.display p[data-v-625bc6ad]:last-child {\n    position: relative;\n    background: #ADD8E6;\n    font-size: 28px;\n    line-height: 36px;\n    color: #fff;\n    padding: 4px 15px 0px 15px;\n    height: 36px;\n    overflow: hidden;\n}\ndiv.display span[data-v-625bc6ad] {\n    position: absolute;\n    right: 5px;\n}\ndiv.keys[data-v-625bc6ad] {\n    margin-top: 30px;\n    text-align: center;\n}\ndiv.keys button[data-v-625bc6ad] {\n    width: 23%;\n    margin-bottom: 5px;\n    background: #181a1b;\n    border-radius: 5px;\n}\ndiv.keys button[data-v-625bc6ad]:hover {\n    cursor: pointer;\n}\ndiv.history ul[data-v-625bc6ad] {\n    list-style-type: none;\n    max-height: 315px;\n    overflow-y: scroll;\n    padding: 0px;\n}\n[data-v-625bc6ad]::-webkit-scrollbar {\n  width: 5px;\n}\ndiv.history ul li[data-v-625bc6ad] {\n    padding: 10px;\n    border-bottom: 1px solid #ADD8E6;\n}\n", ""]);
 
 // exports
 
@@ -38398,7 +38484,10 @@ var render = function() {
           _c("div", { staticClass: "display" }, [
             _c("p", [_vm._v(" " + _vm._s(_vm.prev_display_value) + " ")]),
             _vm._v(" "),
-            _c("p", [_vm._v(_vm._s(_vm.fixDisplayedEquation()))])
+            _c("p", [
+              _vm._v(_vm._s(_vm.fixDisplayedEquation()) + " "),
+              _vm.display_pipe ? _c("span", [_vm._v("|")]) : _vm._e()
+            ])
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "keys" }, [
