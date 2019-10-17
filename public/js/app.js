@@ -1893,6 +1893,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -1902,7 +1906,7 @@ __webpack_require__.r(__webpack_exports__);
       display_value: "2 + ( 2 - 1 )",
       equation: "",
       result: "",
-      prev_display_value: "1 + 2 + 3 - 4 = 2",
+      prev_display_value: "",
       guest_history: [],
       display_has_number_now: false,
       site_url: "http://localhost:8000",
@@ -1953,7 +1957,6 @@ __webpack_require__.r(__webpack_exports__);
         case "C":
           this.display_value = "";
           this.display_has_number_now = false;
-          console.log("<> string length: " + this.display_value.length);
           break;
 
         case ".":
@@ -1966,11 +1969,12 @@ __webpack_require__.r(__webpack_exports__);
           var result = this.calculateResult(this.display_value);
           this.result = result;
           this.prev_display_value = this.equation + " = " + this.result;
-          this.display_value = result;
-          this.updateGuestHistory();
+          this.display_value = result; //this.updateGuestHistory()
+
           /* Save the result in database */
 
           this.postHistory();
+          this.getHistory();
           break;
 
         default:
@@ -1978,10 +1982,8 @@ __webpack_require__.r(__webpack_exports__);
             if (!this.display_has_number_now) {
               val = " " + val;
               this.display_has_number_now = true;
-              console.log("<> no numbers found infront");
             } else {
               val = "" + val;
-              console.log("<> numbers found infront");
             }
           } else {
             val = " " + val;
@@ -6869,7 +6871,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\ndiv.calculator[data-v-625bc6ad] {\n    margin-top: 60px;\n}\ndiv.display[data-v-625bc6ad] {\n    text-align: right;\n}\ndiv.display p[data-v-625bc6ad], div.history[data-v-625bc6ad], div.keys[data-v-625bc6ad], .card-header h5[data-v-625bc6ad] {\n    font-family: 'Orbitron', sans-serif;\n}\n.card-header h5[data-v-625bc6ad] {\n    font-weight: bold;\n}\ndiv.display p[data-v-625bc6ad]:first-child {\n    font-size: 12px;\n}\ndiv.display p[data-v-625bc6ad]:last-child {\n    position: relative;\n    background: #ADD8E6;\n    font-size: 28px;\n    line-height: 36px;\n    color: #fff;\n    padding: 4px 15px 0px 15px;\n    height: 36px;\n    overflow: hidden;\n}\ndiv.display span[data-v-625bc6ad] {\n    position: absolute;\n    right: 5px;\n}\ndiv.keys[data-v-625bc6ad] {\n    margin-top: 30px;\n    text-align: center;\n}\ndiv.keys button[data-v-625bc6ad] {\n    width: 23%;\n    margin-bottom: 5px;\n    background: #181a1b;\n    border-radius: 5px;\n}\ndiv.keys button[data-v-625bc6ad]:hover {\n    cursor: pointer;\n}\ndiv.history ul[data-v-625bc6ad] {\n    list-style-type: none;\n    max-height: 315px;\n    overflow-y: scroll;\n    padding: 0px;\n}\n[data-v-625bc6ad]::-webkit-scrollbar {\n  width: 5px;\n}\ndiv.history ul li[data-v-625bc6ad] {\n    padding: 10px;\n    border-bottom: 1px solid #ADD8E6;\n}\n", ""]);
+exports.push([module.i, "\n.container[data-v-625bc6ad] {\n    background: #181a1b;\n    color: #dad7d2;\n    font-family: 'Orbitron', sans-serif;\n}\ndiv.calculator[data-v-625bc6ad] {\n    margin-top: 60px;\n}\ndiv.display[data-v-625bc6ad] {\n    text-align: right;\n}\n.card-header h5[data-v-625bc6ad] {\n    font-weight: bold;\n}\ndiv.display p[data-v-625bc6ad]:first-child {\n    font-size: 12px;\n    min-height: 18px;\n}\ndiv.display p[data-v-625bc6ad]:last-child {\n    position: relative;\n    background: #17404d;\n    font-size: 28px;\n    line-height: 36px;\n    color: #fff;\n    padding: 4px 15px 0px 15px;\n    height: 36px;\n    overflow: hidden;\n}\ndiv.display span[data-v-625bc6ad] {\n    position: absolute;\n    right: 5px;\n}\ndiv.keys[data-v-625bc6ad] {\n    margin-top: 40px;\n    text-align: center;\n}\ndiv.keys button[data-v-625bc6ad] {\n    width: 23%;\n    margin-bottom: 13px;\n    background: #181a1b;\n    color: #e8e6e3;\n    border-radius: 5px;\n    border-color: #575757\n}\ndiv.keys button[data-v-625bc6ad]:hover {\n    cursor: pointer;\n}\ndiv.history ul[data-v-625bc6ad] {\n    list-style-type: none;\n    max-height: 315px;\n    overflow-y: scroll;\n    padding: 0px;\n}\n[data-v-625bc6ad]::-webkit-scrollbar {\n  width: 5px;\n  background:#17404d;\n}\n[data-v-625bc6ad]::-webkit-scrollbar-thumb {\n  background: #e8e6e3;\n}\ndiv.history ul li[data-v-625bc6ad] {\n    padding: 10px;\n    border-bottom: 1px solid #236073;\n}\n@media screen and (min-width: 425px) {\ndiv.card-header[data-v-625bc6ad] {\n        margin-top: 30px;\n}\ndiv.col-md-12[data-v-625bc6ad] {\n        margin-bottom: 0px !important;\n}\ndiv.calculator[data-v-625bc6ad] {\n        margin-top: 35px;\n}\n}\n", ""]);
 
 // exports
 
@@ -38353,6 +38355,8 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
     _c("div", { staticClass: "row justify-content-center" }, [
+      _vm._m(0),
+      _vm._v(" "),
       _c("div", { staticClass: "col-md-6" }, [
         _c("div", { staticClass: "calculator" }, [
           _c("div", { staticClass: "display" }, [
@@ -38398,7 +38402,7 @@ var render = function() {
                   }
                 }
               },
-              [_vm._v("B")]
+              [_vm._v("CE")]
             ),
             _vm._v(" "),
             _c(
@@ -38410,7 +38414,7 @@ var render = function() {
                   }
                 }
               },
-              [_vm._v("C")]
+              [_vm._v("AC")]
             ),
             _vm._v(" "),
             _c(
@@ -38609,7 +38613,7 @@ var render = function() {
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "col-md-6" }, [
-        _vm._m(0),
+        _vm._m(1),
         _vm._v(" "),
         _c("div", { staticClass: "card-body history" }, [
           _c(
@@ -38632,6 +38636,20 @@ var render = function() {
   ])
 }
 var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "col-md-12 mt-4 mb-4 text-center" }, [
+      _c("h2", { staticClass: "mb-4" }, [_vm._v("Calculator")]),
+      _vm._v(" "),
+      _c("p", [
+        _vm._v(
+          'This is a simple basic calculator. Use this basic calculator for math with addition, subtraction, division and multiplication. You can also keep track of the calculation you have done using this calculator. The "History" section on the right on the calculator shows your calculation history.'
+        )
+      ])
+    ])
+  },
   function() {
     var _vm = this
     var _h = _vm.$createElement
@@ -50839,8 +50857,7 @@ module.exports = function(module) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _components_ExampleComponent_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/ExampleComponent.vue */ "./resources/js/components/ExampleComponent.vue");
-/* harmony import */ var _components_Calculator_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/Calculator.vue */ "./resources/js/components/Calculator.vue");
+/* harmony import */ var _components_Calculator_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/Calculator.vue */ "./resources/js/components/Calculator.vue");
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -50858,9 +50875,6 @@ window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.
  */
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
-//Vue.component('example-component', require('./components/ExampleComponent.vue').default);
-//Vue.component('calculator', require('./components/Calculator.vue'));
-
 
 
 /**
@@ -50872,8 +50886,7 @@ window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.
 var app = new Vue({
   el: '#app',
   components: {
-    example_component: _components_ExampleComponent_vue__WEBPACK_IMPORTED_MODULE_0__["default"],
-    calculator: _components_Calculator_vue__WEBPACK_IMPORTED_MODULE_1__["default"]
+    calculator: _components_Calculator_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
   }
 });
 

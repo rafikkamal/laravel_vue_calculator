@@ -15,9 +15,14 @@
         <!-- CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <link href="{{ asset('css/app.css') }}" />
+        <style type="text/css">
+            body {
+                background: #181a1b !important;
+                color: #e8e6e3;
+            }
+        </style>
     </head>
     <body>
-        <h1>Calculator</h1>
         <div id="app">
             <calculator ip="{{$_SERVER['REMOTE_ADDR']}}"/>
         </div>

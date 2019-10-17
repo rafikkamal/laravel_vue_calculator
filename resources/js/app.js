@@ -19,9 +19,6 @@ window.Vue = require('vue');
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
-//Vue.component('example-component', require('./components/ExampleComponent.vue').default);
-//Vue.component('calculator', require('./components/Calculator.vue'));
-import example_component from './components/ExampleComponent.vue';
 import calculator from './components/Calculator.vue';
 
 /**
@@ -33,7 +30,6 @@ import calculator from './components/Calculator.vue';
 const app = new Vue({
     el: '#app',
     components: {
-    	example_component,
     	calculator
     }
 });

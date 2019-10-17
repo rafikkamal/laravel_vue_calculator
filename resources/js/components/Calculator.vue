@@ -1,6 +1,10 @@
 <template>
     <div class="container">
         <div class="row justify-content-center">
+            <div class="col-md-12 mt-4 mb-4 text-center"> 
+                <h2 class="mb-4">Calculator</h2>
+                <p>This is a simple basic calculator. Use this basic calculator for math with addition, subtraction, division and multiplication. You can also keep track of the calculation you have done using this calculator. The "History" section on the right on the calculator shows your calculation history.</p>
+            </div>
             <div class="col-md-6">
                 <div class="calculator">
                     <div class="display">
@@ -10,8 +14,8 @@
                     <div class="keys">
                         <button @click="keyVal('(')">(</button>
                         <button @click="keyVal(')')">)</button>
-                        <button @click="keyVal('B')">B</button>
-                        <button @click="keyVal('C')">C</button>
+                        <button @click="keyVal('B')">CE</button>
+                        <button @click="keyVal('C')">AC</button>
 
                         <button @click="keyVal('9')">9</button>
                         <button @click="keyVal('8')">8</button>
@@ -61,7 +65,7 @@ export default {
             display_value: "2 + ( 2 - 1 )",
             equation: "",
             result: "",
-            prev_display_value: "1 + 2 + 3 - 4 = 2",
+            prev_display_value: "",
             guest_history: [],
             display_has_number_now: false,
             site_url: "http://localhost:8000",
@@ -107,7 +111,6 @@ export default {
                 case "C":
                     this.display_value = ""
                     this.display_has_number_now = false
-                    console.log("<> string length: "+this.display_value.length)
                     break
                 case ".":
                     this.display_value += val
@@ -119,19 +122,18 @@ export default {
                     this.result = result
                     this.prev_display_value = this.equation + " = "+this.result
                     this.display_value = result
-                    this.updateGuestHistory()
+                    //this.updateGuestHistory()
                     /* Save the result in database */
                     this.postHistory()
+                    this.getHistory()
                     break
                 default:
                     if(val >= 0 && val <=9) {
                         if(!this.display_has_number_now) {
                             val = " "+val
                             this.display_has_number_now = true
-                            console.log("<> no numbers found infront")
                         } else {
-                            val = ""+val
-                            console.log("<> numbers found infront")    
+                            val = ""+val  
                         }
                     } else {
                         val = " "+val
@@ -509,24 +511,27 @@ export default {
 </script>
 
 <style scoped>
+.container {
+    background: #181a1b;
+    color: #dad7d2;
+    font-family: 'Orbitron', sans-serif;
+}
 div.calculator {
     margin-top: 60px;
 }
 div.display {
     text-align: right;
 }
-div.display p, div.history, div.keys, .card-header h5 {
-    font-family: 'Orbitron', sans-serif;
-}
 .card-header h5 {
     font-weight: bold;
 }
 div.display p:first-child {
     font-size: 12px;
+    min-height: 18px;
 }
 div.display p:last-child {
     position: relative;
-    background: #ADD8E6;
+    background: #17404d;
     font-size: 28px;
     line-height: 36px;
     color: #fff;
@@ -539,14 +544,16 @@ div.display span {
     right: 5px;
 }
 div.keys {
-    margin-top: 30px;
+    margin-top: 40px;
     text-align: center;
 }
 div.keys button {
     width: 23%;
-    margin-bottom: 5px;
+    margin-bottom: 13px;
     background: #181a1b;
+    color: #e8e6e3;
     border-radius: 5px;
+    border-color: #575757
 }
 div.keys button:hover {
     cursor: pointer;
@@ -559,9 +566,24 @@ div.history ul {
 }
 ::-webkit-scrollbar {
   width: 5px;
+  background:#17404d;
+}
+::-webkit-scrollbar-thumb {
+  background: #e8e6e3;
 }
 div.history ul li {
     padding: 10px;
-    border-bottom: 1px solid #ADD8E6;
+    border-bottom: 1px solid #236073;
+}
+@media screen and (min-width: 425px) {
+    div.card-header {
+        margin-top: 30px;
+    }
+    div.col-md-12 {
+        margin-bottom: 0px !important;
+    }
+    div.calculator {
+        margin-top: 35px;
+    }
 }
 </style>
