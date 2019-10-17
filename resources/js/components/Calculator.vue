@@ -114,9 +114,6 @@ export default {
                     break
                 case "=":
                     this.display_has_number_now = false
-                    console.log("<<<<<<<<<<<<<<<<<<<<<<<<<")
-                    console.log("display_has_number_now: "+this.display_has_number_now)
-                    console.log("<<<<<<<<<<<<<<<<<<<<<<<<<")
                     this.equation = this.display_value
                     let result = this.calculateResult(this.display_value)
                     this.result = result
@@ -208,16 +205,10 @@ export default {
             var has_priority = false;
 
             var str_arr = str.split(" ")
-            // console.log("str_arr : "+str_arr.toString())
             if(str_arr[0]=="" || str_arr[0]==" ") {
-                console.log("!!! error found")
                 str_arr = str_arr.slice(1, str_arr.length)
-                // console.log("!!! modified str_arr : "+str_arr.toString())
             }
-            // console.log("!!! modified str_arr : "+str_arr.toString())
             str_arr = this.checkForNan(str_arr)
-
-            //console.log(str_arr)
 
             var defined_operators_arr = ["+","-","/","x","%","(",")"];
             var operators_arr = [];
@@ -234,11 +225,9 @@ export default {
             var first_val_neg = false;
             var data_processing = false;
 
-            //foreach(str_arr as seg) {
             var len = str_arr.length
             for(var k = 0; k < len; k++) {
-                var seg = str_arr[k];
-                // console.log(k+") working with segment: "+seg)
+                var seg = str_arr[k]
                 if(defined_operators_arr.includes(seg)) {
                     if(data_processing == false) {
                         if(seg == "-") {
@@ -256,36 +245,9 @@ export default {
                         if(seg=="(") {
                             parenthesis_start_arr.push(operators_arr.length-1)
                             parenthesis_start_num_arr.push(numbers_arr.length)
-                            // parenthesis_start_num_arr.push(numbers_arr.length-1)
-
-                            console.log("() start ( ")
-
-                            console.log("() optr index: "+(operators_arr.length-1))
-
-                            //console.log("() num index: n"+(numbers_arr.length - 1))
-                            console.log("() num index: n"+(numbers_arr.length))
-
-                            // console.log("() num value: "+numbers_arr[numbers_arr.length - 1])
-                            console.log("() num value: "+numbers_arr[numbers_arr.length])
-
-                            console.log("() end ( ")
-                            console.log("() *************")
                         } else if(seg==")") {
                             parenthesis_end_arr.push(operators_arr.length-1)
                             parenthesis_end_num_arr.push( numbers_arr.length - 1)
-
-                            console.log("() start ) ")
-
-                            console.log("() optr index: "+(operators_arr.length-1))
-
-                            console.log("() num index: n"+(numbers_arr.length - 1))
-
-                            console.log("() num value: "+numbers_arr[numbers_arr.length - 1])
-
-                            console.log("() numbers_arr: "+numbers_arr.toString())
-                            console.log("() operators_arr: "+operators_arr.toString())
-
-                            console.log("() end ) ")
                         }
                     }
                 } else {
@@ -299,7 +261,6 @@ export default {
                 data_processing = true;
             }
             
-            //operators_arr = this.checkForNan(operators_arr)
             numbers_arr = this.checkForNan(numbers_arr)
 
             return {
@@ -348,46 +309,23 @@ export default {
             };
         },
         unset: function(array, index) {
-            console.log("<<>> inside unset")
-            console.log("<<>> array: "+array.toString())
-            console.log("<<>> index: "+index)
             var len = array.length
             if(len == 1) {
-                console.log("<<>> the lenght of array is 1")
                 return [];
             }
             if(index < 0 || index > len) {
-                console.log("<<!>> <<<<<<<<<<<<<<<>>>")
-                console.log("<<!>> From unset()")
-                console.log("<<!>> Error for index "+index)
-                console.log("<<!>> Error for array length: "+len)
-                console.log("<<!>> array: "+array.toString())
-                console.log("<<!>> out of unset()")
-                console.log("<<!>> <<<<<<<<<<<<<<<>>>")
-                console.log(" ")
                 return array
             }
             var new_arr = []
             if(index == 0) {
-                console.log("<<>> the index of array is 0")
                 new_arr = array.slice(1, len)
             } else if(index == len-1) {
-                console.log("<<>> the index of array is last: "+index)
                 new_arr = array.slice(0, len-1)
             } else {
                 var arr_2 = array.slice(index+1, len)
                 var arr_1 = array.slice(0, index)
-                
-                console.log("<<>> arr_1: "+arr_1.toString())
-                console.log("<<>> arr_2: "+arr_2.toString())
-
                 new_arr = arr_1.concat(arr_2)
             }
-            console.log("<<>> after unset")
-            console.log("<<>> new_arr: "+new_arr.toString())
-            console.log("<<>> left unset")
-            console.log("<<>> ****************")
-            console.log("<<>> ")
             return new_arr
         },
         fixArrayIndex: function(array = []) {
@@ -428,70 +366,34 @@ export default {
             return val;
         },
         calculator: function() {
-            //$str_arr = explode(" ", $str);
-            console.log("<> string length: "+ this.display_value.length)
             var data = this.numberOperatorSegmentation(this.display_value)
 
             var operators_arr = data['operators']
             var numbers_arr = data['numbers']
 
-            console.log("calculator - start")
-            console.log(operators_arr)
-            console.log(numbers_arr)
-            console.log("calculator - end")
-
-
             if(data['parenthesis_arr'].parenthesis_start_arr.length > 0) {
-                console.log("<<>> will check parenthesis")
                 var pare_start_arr = data['parenthesis_arr'].parenthesis_start_arr
                 var pare_end_arr = data['parenthesis_arr'].parenthesis_end_arr
 
                 var pare_start_num_arr = data['parenthesis_arr'].parenthesis_start_num_arr
                 var pare_end_num_arr = data['parenthesis_arr'].parenthesis_end_num_arr
 
-
                 var pare_start_arr__size = pare_start_arr.length
                 var pare_end_arr__size = pare_end_arr.length
-
 
                 for(var i = pare_start_arr__size - 1; i >= 0 ; i--) {
 
                     var optr_slice_length = pare_end_arr[i] - pare_start_arr[i] - 1
 
-                    // var operators_arr_new = array_slice(operators_arr, $pare_start_arr[i] + 1, optr_slice_length)
                     var operators_arr_new = operators_arr.slice(pare_start_arr[i] + 1, pare_end_arr[i])
-
-                    console.log("<<!>> operators_arr_new: "+operators_arr_new.toString())
-
-                    console.log("for parenthesis - start ************************")
-                    console.log("operators_arr_new")
-                    console.log("pare_start_arr[i]: "+pare_start_arr[i])
-                    console.log("pare_end_arr[i]: "+pare_end_arr[i])
-                    console.log("optr_slice_length: "+optr_slice_length)
-                    console.log(operators_arr_new)
-                    console.log("for parenthesis - end")
 
                     var num_slice_length = optr_slice_length + 1
 
-                    // var numbers_arr_new = array_slice($numbers_arr, $pare_start_num_arr[$i], num_slice_length)
                     var numbers_arr_new = numbers_arr.slice(pare_start_num_arr[i], pare_end_num_arr[i] + 1)
-
-                    console.log("<<!>> numbers_arr_new: "+numbers_arr_new.toString())
-
-                    console.log("for parenthesis - start **************************")
-                    console.log("numbers_arr_new")
-                    console.log(numbers_arr_new)
-                    console.log("pare_start_num_arr[i] : "+pare_start_num_arr[i])
-                    console.log("pare_end_num_arr[i] : "+pare_end_num_arr[i])
-                    console.log("for parenthesis - end")
 
                     var data_new = this.solvePriority(numbers_arr_new, operators_arr_new)
                     numbers_arr_new = data_new['numbers']
                     operators_arr_new = data_new['operators']
-
-                    console.log("<<!>> 485 operators_arr_new: "+operators_arr_new.toString())
-                    console.log("<<!>> numbers_arr_new: "+numbers_arr_new.toString())
-
                     
                     if(numbers_arr_new.length==1 && operators_arr_new.length==0) {
                         val = numbers_arr_new[0]
@@ -499,89 +401,17 @@ export default {
                         val = this.calculateValue(numbers_arr_new, operators_arr_new)
                     }
 
-
-                    console.log("<<!>> 496 numbers_arr: "+numbers_arr.toString())
-
                     numbers_arr[pare_start_num_arr[i]] = val
 
-                    console.log("<<!>> 500 numbers_arr: "+numbers_arr.toString())
-
-                    console.log("<<!>> pare_start_num_arr[i]: "+ pare_start_num_arr[i])
-
-                    console.log("<<!>> pare end index: "+(pare_start_num_arr[i]+num_slice_length))
-
-                    console.log("<<!>> val: "+ val)
-                    
-                    console.log("<<!>> numbers_arr_new: "+numbers_arr_new.toString())
-                    
-                    console.log("<<!>> ++++++++++++++++++")
-
-                    // for(var j = pare_start_num_arr[i] + 1; j < pare_start_num_arr[i]+num_slice_length; j++) {
-  
-                    //     numbers_arr = this.unset(numbers_arr, j)
-
-                    //     console.log("<<!>> working with index j :"+j)
-
-                    //     console.log("<<>> checking parenthesis, unseting numbers_arr")
-                    //     console.log("<<>> j :"+j)
-                    //     console.log("<<!>> numbers_arr: "+numbers_arr.toString())
-                    //     console.log("<<!>> ----------------")
-                    //     console.log("<<>> ")
-                    // }
-
-                    
-                    console.log("<<*>>")
-                    console.log("<<*>> for the index i: "+i)
-                    console.log("<<*>> pare start index: "+pare_start_num_arr[i])
-                    console.log("<<*>> pare end index: "+pare_end_num_arr[i])
-                    console.log("<<*>>")
-
-                    // for(var j = pare_start_num_arr[i]+num_slice_length; j > pare_start_num_arr[i]; j--) {
-                    for(var j = pare_end_num_arr[i]; j > pare_start_num_arr[i]; j--) {    
-  
+                    for(var j = pare_end_num_arr[i]; j > pare_start_num_arr[i]; j--) {      
                         numbers_arr = this.unset(numbers_arr, j)
-
-                        console.log("<<!>> working with index j :"+j)
-
-                        console.log("<<>> checking parenthesis, unseting numbers_arr")
-                        console.log("<<>> j :"+j)
-                        console.log("<<!>> numbers_arr: "+numbers_arr.toString())
-                        console.log("<<!>> ----------------")
-                        console.log("<<>> ")
                     }
 
-                    console.log("<<!>> 514 numbers_arr: "+numbers_arr.toString())
-
-                    // for(var j = pare_start_arr[i]; j <= pare_start_arr[i]+optr_slice_length+1; j++) {
-                    //     operators_arr = this.unset(operators_arr, j)
-
-                    //     console.log("<<>> checking parenthesis, unseting operators_arr")
-                    //     console.log("<<>> j :"+j)
-                    //     console.log("<<>> operators_arr: "+operators_arr.toString())
-                    //     console.log("<<>> ----------------")
-                    //     console.log("<<>> ")
-                    // }
-
-                    // for(var j = pare_start_arr[i]+optr_slice_length; j > pare_start_arr[i]; j--) {
                     for(var j = pare_end_arr[i]; j >= pare_start_arr[i]; j--) {
                         operators_arr = this.unset(operators_arr, j)
-
-                        console.log("<<>> checking parenthesis, unseting operators_arr")
-                        console.log("<<>> j :"+j)
-                        console.log("<<>> operators_arr: "+operators_arr.toString())
-                        console.log("<<>> ----------------")
-                        console.log("<<>> ")
                     }
-
-                    console.log("<<!>> 525 operators_arr: "+operators_arr.toString())
-                    console.log("<<!>> ----------------")
                 }
             }
-
-            console.log("<<!>> operators_arr: "+operators_arr.toString())
-            console.log("<<!>> numbers_arr: "+numbers_arr.toString())
-            console.log(operators_arr)
-            console.log(numbers_arr)
 
             /**
              * Fix the array index
@@ -589,16 +419,9 @@ export default {
             numbers_arr = this.fixArrayIndex(numbers_arr)
             operators_arr = this.fixArrayIndex(operators_arr)
 
-            console.log("after fixArrayIndex")
-            console.log(operators_arr)
-            console.log(numbers_arr)
-
             data_new = this.solvePriority(numbers_arr, operators_arr)
             numbers_arr = data_new['numbers']
             operators_arr = data_new['operators']
-            console.log("after solvePriority")
-            console.log(operators_arr)
-            console.log(numbers_arr)
 
             var val;
             if(numbers_arr.length==1 && operators_arr.length==0) {
@@ -608,8 +431,6 @@ export default {
                 val = this.calculateValue(numbers_arr, operators_arr)
             }
             return val
-
-            //return 0
         },
         getGuest: function() {
             let axiosConfig = {
@@ -694,8 +515,11 @@ div.calculator {
 div.display {
     text-align: right;
 }
-div.display p, div.history, div.keys {
+div.display p, div.history, div.keys, .card-header h5 {
     font-family: 'Orbitron', sans-serif;
+}
+.card-header h5 {
+    font-weight: bold;
 }
 div.display p:first-child {
     font-size: 12px;
