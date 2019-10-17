@@ -1899,20 +1899,11 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       //display_value: "8 + 3 x 2 - ( 2 - 1 ) + ( 9 / 2 + 3 )",
-      display_value: "8 + ( 2 - 2 )",
+      display_value: "2 + ( 2 - 1 )",
       equation: "",
       result: "",
       prev_display_value: "1 + 2 + 3 - 4 = 2",
-      guest_history: [{
-        id: 1,
-        content: "4 + 2 + 3 x 1 = 9"
-      }, {
-        id: 2,
-        content: "4 / 2 + 3 x 1 = 5"
-      }, {
-        id: 3,
-        content: "4 + ( 2 + 3 ) x 2 = 14"
-      }],
+      guest_history: [],
       display_has_number_now: false,
       site_url: "http://localhost:8000",
       guest_id: 0
@@ -1925,10 +1916,12 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     keyVal: function keyVal(val) {
       var equation = this.display_value;
-      /* Fix the displayed equation */
+      /** 
+       * Fix the displayed equation
+       * Stop the overflow from the display screen 
+       */
 
       this.fixDisplayedEquation();
-      /**/
 
       switch (val) {
         case "B":
@@ -1959,6 +1952,7 @@ __webpack_require__.r(__webpack_exports__);
         case "C":
           this.display_value = "";
           this.display_has_number_now = false;
+          console.log("<> string length: " + this.display_value.length);
           break;
 
         case ".":
@@ -1966,6 +1960,10 @@ __webpack_require__.r(__webpack_exports__);
           break;
 
         case "=":
+          this.display_has_number_now = false;
+          console.log("<<<<<<<<<<<<<<<<<<<<<<<<<");
+          console.log("display_has_number_now: " + this.display_has_number_now);
+          console.log("<<<<<<<<<<<<<<<<<<<<<<<<<");
           this.equation = this.display_value;
           var result = this.calculateResult(this.display_value);
           this.result = result;
@@ -1982,8 +1980,10 @@ __webpack_require__.r(__webpack_exports__);
             if (!this.display_has_number_now) {
               val = " " + val;
               this.display_has_number_now = true;
+              console.log("<> no numbers found infront");
             } else {
               val = "" + val;
+              console.log("<> numbers found infront");
             }
           } else {
             val = " " + val;
@@ -2085,7 +2085,8 @@ __webpack_require__.r(__webpack_exports__);
       var len = str_arr.length;
 
       for (var k = 0; k < len; k++) {
-        var seg = str_arr[k]; //console.log("working with segment: "+seg)
+        var seg = str_arr[k];
+        console.log("working with segment: " + seg);
 
         if (defined_operators_arr.includes(seg)) {
           if (data_processing == false) {
@@ -2104,11 +2105,23 @@ __webpack_require__.r(__webpack_exports__);
             });
           } else if (["(", ")"].includes(seg)) {
             if (seg == "(") {
-              parenthesis_start_arr.push(operators_arr.length - 1);
-              parenthesis_start_num_arr.push(numbers_arr.length);
+              parenthesis_start_arr.push(operators_arr.length - 1); // parenthesis_start_num_arr.push(numbers_arr.length)
+
+              parenthesis_start_num_arr.push(numbers_arr.length - 1);
+              console.log("() start ( ");
+              console.log("() optr index: " + (operators_arr.length - 1));
+              console.log("() num index: n" + (numbers_arr.length - 1));
+              console.log("() num value: " + numbers_arr[numbers_arr.length - 1]);
+              console.log("() end ( ");
+              console.log("() *************");
             } else if (seg == ")") {
               parenthesis_end_arr.push(operators_arr.length - 1);
               parenthesis_end_num_arr.push(numbers_arr.length - 1);
+              console.log("() start ) ");
+              console.log("() optr index: " + (operators_arr.length - 1));
+              console.log("() num index: n" + (numbers_arr.length - 1));
+              console.log("() num value: " + numbers_arr[numbers_arr.length - 1]);
+              console.log("() end ) ");
             }
           }
         } else {
@@ -2122,8 +2135,10 @@ __webpack_require__.r(__webpack_exports__);
         }
 
         data_processing = true;
-      }
+      } //operators_arr = this.checkForNan(operators_arr)
 
+
+      numbers_arr = this.checkForNan(numbers_arr);
       return {
         'operators': operators_arr,
         'numbers': numbers_arr,
@@ -2135,6 +2150,13 @@ __webpack_require__.r(__webpack_exports__);
           'parenthesis_end_num_arr': parenthesis_end_num_arr
         }
       };
+    },
+    checkForNan: function checkForNan(array) {
+      if (isNaN(array[0])) {
+        array = array.slice(1, array.len);
+      }
+
+      return array;
     },
     solvePriority: function solvePriority(numbers, operators) {
       console.log("inside solvePriority");
@@ -2192,6 +2214,7 @@ __webpack_require__.r(__webpack_exports__);
         new_arr = arr_1.concat(arr_2);
       }
 
+      console.log("after unset");
       console.log(new_arr);
       console.log("left unset");
       return new_arr;
@@ -2241,11 +2264,14 @@ __webpack_require__.r(__webpack_exports__);
     },
     calculator: function calculator() {
       //$str_arr = explode(" ", $str);
+      console.log("<> string length: " + this.display_value.length);
       var data = this.numberOperatorSegmentation(this.display_value);
       var operators_arr = data['operators'];
       var numbers_arr = data['numbers'];
+      console.log("calculator - start");
       console.log(operators_arr);
       console.log(numbers_arr);
+      console.log("calculator - end");
 
       if (data['parenthesis_arr'].parenthesis_start_arr.length > 0) {
         var pare_start_arr = data['parenthesis_arr'].parenthesis_start_arr;
@@ -2339,7 +2365,6 @@ __webpack_require__.r(__webpack_exports__);
         'ip': this.ip
       }, axiosConfig).then(function (response) {
         _this.guest_id = response.data.guest_id;
-        console.log(response);
         return response.data;
       })["catch"](function (error) {
         console.log(error);
@@ -2348,7 +2373,6 @@ __webpack_require__.r(__webpack_exports__);
     getHistory: function getHistory() {
       var _this2 = this;
 
-      console.log('called getHistory');
       var axiosConfig = {
         headers: {
           'Content-Type': 'application/json',
@@ -2360,7 +2384,6 @@ __webpack_require__.r(__webpack_exports__);
         'guest_id': this.guest_id
       }, axiosConfig).then(function (response) {
         _this2.guest_history = response.data.guest_history;
-        console.log(response.data);
         return response.data;
       })["catch"](function (error) {
         console.log(error);
@@ -6886,7 +6909,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\ndiv.calculator[data-v-625bc6ad] {\n}\ndiv.display[data-v-625bc6ad] {\n    text-align: right;\n}\ndiv.display p[data-v-625bc6ad], div.history[data-v-625bc6ad], div.keys[data-v-625bc6ad] {\n    font-family: 'Orbitron', sans-serif;\n}\ndiv.display p[data-v-625bc6ad]:first-child {\n    font-size: 12px;\n}\ndiv.display p[data-v-625bc6ad]:last-child {\n    background: #ADD8E6;\n    font-size: 28px;\n    line-height: 36px;\n    color: #fff;\n    padding: 4px 15px 0px 15px;\n    height: 36px;\n    overflow: hidden;\n}\ndiv.keys[data-v-625bc6ad] {\n    text-align: center;\n}\ndiv.keys button[data-v-625bc6ad] {\n    width: 23%;\n    margin-bottom: 5px;\n    background: #181a1b;\n    border-radius: 5px;\n}\ndiv.keys button[data-v-625bc6ad]:hover {\n    cursor: pointer;\n}\ndiv.history ul[data-v-625bc6ad] {\n    list-style-type: none\n}\ndiv.history ul li[data-v-625bc6ad] {\n    padding: 10px;\n    border-bottom: 1px solid #ADD8E6;\n}\n", ""]);
+exports.push([module.i, "\ndiv.calculator[data-v-625bc6ad] {\n    margin-top: 60px;\n}\ndiv.display[data-v-625bc6ad] {\n    text-align: right;\n}\ndiv.display p[data-v-625bc6ad], div.history[data-v-625bc6ad], div.keys[data-v-625bc6ad] {\n    font-family: 'Orbitron', sans-serif;\n}\ndiv.display p[data-v-625bc6ad]:first-child {\n    font-size: 12px;\n}\ndiv.display p[data-v-625bc6ad]:last-child {\n    background: #ADD8E6;\n    font-size: 28px;\n    line-height: 36px;\n    color: #fff;\n    padding: 4px 15px 0px 15px;\n    height: 36px;\n    overflow: hidden;\n}\ndiv.keys[data-v-625bc6ad] {\n    margin-top: 30px;\n    text-align: center;\n}\ndiv.keys button[data-v-625bc6ad] {\n    width: 23%;\n    margin-bottom: 5px;\n    background: #181a1b;\n    border-radius: 5px;\n}\ndiv.keys button[data-v-625bc6ad]:hover {\n    cursor: pointer;\n}\ndiv.history ul[data-v-625bc6ad] {\n    list-style-type: none;\n    max-height: 315px;\n    overflow-y: scroll;\n    padding: 0px;\n}\n[data-v-625bc6ad]::-webkit-scrollbar {\n  width: 5px;\n}\ndiv.history ul li[data-v-625bc6ad] {\n    padding: 10px;\n    border-bottom: 1px solid #ADD8E6;\n}\n", ""]);
 
 // exports
 
@@ -38629,7 +38652,7 @@ var render = function() {
           _c(
             "ul",
             _vm._l(_vm.guest_history, function(history_content) {
-              return _c("li", { key: history_content.id }, [
+              return _c("li", [
                 _vm._v(
                   _vm._s(history_content.equation) +
                     " = " +

@@ -41,7 +41,7 @@
                 </div>
                 <div class="card-body history">
                     <ul>
-                        <li v-for="history_content in guest_history" :key="history_content.id">{{history_content.equation}} = {{history_content.result}}
+                        <li v-for="history_content in guest_history" >{{history_content.equation}} = {{history_content.result}}
                         </li>
                     </ul>
                 </div>
@@ -58,24 +58,11 @@ export default {
     data: function() {
         return {
             //display_value: "8 + 3 x 2 - ( 2 - 1 ) + ( 9 / 2 + 3 )",
-            display_value: "8 + ( 2 - 2 )",
+            display_value: "2 + ( 2 - 1 )",
             equation: "",
             result: "",
             prev_display_value: "1 + 2 + 3 - 4 = 2",
-            guest_history: [
-                {
-                    id: 1,
-                    content: "4 + 2 + 3 x 1 = 9"
-                },
-                {
-                    id: 2,
-                    content: "4 / 2 + 3 x 1 = 5"
-                },
-                {
-                    id: 3,
-                    content: "4 + ( 2 + 3 ) x 2 = 14"
-                }
-            ],
+            guest_history: [],
             display_has_number_now: false,
             site_url: "http://localhost:8000",
             guest_id: 0 
@@ -89,9 +76,11 @@ export default {
         keyVal: function(val) {
             var equation = this.display_value
 
-            /* Fix the displayed equation */
+            /** 
+             * Fix the displayed equation
+             * Stop the overflow from the display screen 
+             */
             this.fixDisplayedEquation();
-            /**/
 
             switch(val) {
                 case "B":
@@ -117,11 +106,16 @@ export default {
                 case "C":
                     this.display_value = ""
                     this.display_has_number_now = false
+                    console.log("<> string length: "+this.display_value.length)
                     break
                 case ".":
                     this.display_value += val
                     break
                 case "=":
+                    this.display_has_number_now = false
+                    console.log("<<<<<<<<<<<<<<<<<<<<<<<<<")
+                    console.log("display_has_number_now: "+this.display_has_number_now)
+                    console.log("<<<<<<<<<<<<<<<<<<<<<<<<<")
                     this.equation = this.display_value
                     let result = this.calculateResult(this.display_value)
                     this.result = result
@@ -136,8 +130,10 @@ export default {
                         if(!this.display_has_number_now) {
                             val = " "+val
                             this.display_has_number_now = true
+                            console.log("<> no numbers found infront")
                         } else {
-                            val = ""+val    
+                            val = ""+val
+                            console.log("<> numbers found infront")    
                         }
                     } else {
                         val = " "+val
@@ -233,7 +229,7 @@ export default {
             var len = str_arr.length
             for(var k = 0; k < len; k++) {
                 var seg = str_arr[k];
-                //console.log("working with segment: "+seg)
+                console.log("working with segment: "+seg)
                 if(defined_operators_arr.includes(seg)) {
                     if(data_processing == false) {
                         if(seg == "-") {
@@ -249,11 +245,33 @@ export default {
                         });
                     } else if(["(", ")"].includes(seg)) {
                         if(seg=="(") {
-                            parenthesis_start_arr.push(operators_arr.length-1);
-                            parenthesis_start_num_arr.push(numbers_arr.length);
+                            parenthesis_start_arr.push(operators_arr.length-1)
+                            // parenthesis_start_num_arr.push(numbers_arr.length)
+                            parenthesis_start_num_arr.push(numbers_arr.length-1)
+
+                            console.log("() start ( ")
+
+                            console.log("() optr index: "+(operators_arr.length-1))
+
+                            console.log("() num index: n"+(numbers_arr.length - 1))
+
+                            console.log("() num value: "+numbers_arr[numbers_arr.length - 1])
+
+                            console.log("() end ( ")
+                            console.log("() *************")
                         } else if(seg==")") {
-                            parenthesis_end_arr.push(operators_arr.length-1);
-                            parenthesis_end_num_arr.push( numbers_arr.length - 1);
+                            parenthesis_end_arr.push(operators_arr.length-1)
+                            parenthesis_end_num_arr.push( numbers_arr.length - 1)
+
+                            console.log("() start ) ")
+
+                            console.log("() optr index: "+(operators_arr.length-1))
+
+                            console.log("() num index: n"+(numbers_arr.length - 1))
+
+                            console.log("() num value: "+numbers_arr[numbers_arr.length - 1])
+
+                            console.log("() end ) ")
                         }
                     }
                 } else {
@@ -266,6 +284,10 @@ export default {
                 }
                 data_processing = true;
             }
+            
+            //operators_arr = this.checkForNan(operators_arr)
+            numbers_arr = this.checkForNan(numbers_arr)
+
             return {
                 'operators': operators_arr,
                 'numbers': numbers_arr,
@@ -277,6 +299,12 @@ export default {
                     'parenthesis_end_num_arr': parenthesis_end_num_arr
                 }
             };
+        },
+        checkForNan: function(array) {
+            if(isNaN(array[0])) {
+                array = array.slice(1, array.len)
+            }
+            return array
         },
         solvePriority: function(numbers, operators) {
             console.log("inside solvePriority")
@@ -329,6 +357,7 @@ export default {
 
                 new_arr = arr_1.concat(arr_2)
             }
+            console.log("after unset")
             console.log(new_arr)
             console.log("left unset")
             return new_arr
@@ -372,13 +401,16 @@ export default {
         },
         calculator: function() {
             //$str_arr = explode(" ", $str);
+            console.log("<> string length: "+ this.display_value.length)
             var data = this.numberOperatorSegmentation(this.display_value)
 
             var operators_arr = data['operators']
             var numbers_arr = data['numbers']
 
+            console.log("calculator - start")
             console.log(operators_arr)
             console.log(numbers_arr)
+            console.log("calculator - end")
 
 
             if(data['parenthesis_arr'].parenthesis_start_arr.length > 0) {
@@ -488,7 +520,6 @@ export default {
             }, axiosConfig)
             .then((response) => {
                 this.guest_id = response.data.guest_id
-                console.log(response)
                 return response.data
             })
             .catch(error => {
@@ -496,7 +527,6 @@ export default {
             })
         },
         getHistory: function() {
-            console.log('called getHistory')
             let axiosConfig = {
               headers: {
                 'Content-Type': 'application/json',
@@ -509,7 +539,6 @@ export default {
             }, axiosConfig)
             .then((response) => {
                 this.guest_history = response.data.guest_history
-                console.log(response.data)
                 return response.data
             })
             .catch(error => {
@@ -549,7 +578,7 @@ export default {
 
 <style scoped>
 div.calculator {
-
+    margin-top: 60px;
 }
 div.display {
     text-align: right;
@@ -570,6 +599,7 @@ div.display p:last-child {
     overflow: hidden;
 }
 div.keys {
+    margin-top: 30px;
     text-align: center;
 }
 div.keys button {
@@ -582,7 +612,13 @@ div.keys button:hover {
     cursor: pointer;
 }
 div.history ul {
-    list-style-type: none
+    list-style-type: none;
+    max-height: 315px;
+    overflow-y: scroll;
+    padding: 0px;
+}
+::-webkit-scrollbar {
+  width: 5px;
 }
 div.history ul li {
     padding: 10px;
