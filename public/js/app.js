@@ -1897,6 +1897,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -1907,6 +1912,8 @@ __webpack_require__.r(__webpack_exports__);
       equation: "",
       result: "",
       prev_display_value: "",
+      syntax_error: false,
+      syntax_error_message: "Syntax Error",
       guest_history: [],
       display_has_number_now: false,
       site_url: "http://localhost:8000",
@@ -1920,6 +1927,7 @@ __webpack_require__.r(__webpack_exports__);
   props: ["ip"],
   methods: {
     keyVal: function keyVal(val) {
+      this.syntax_error = false;
       var equation = this.display_value;
       /** 
        * Fix the displayed equation
@@ -1965,16 +1973,21 @@ __webpack_require__.r(__webpack_exports__);
 
         case "=":
           this.display_has_number_now = false;
-          this.equation = this.display_value;
-          var result = this.calculateResult(this.display_value);
-          this.result = result;
-          this.prev_display_value = this.equation + " = " + this.result;
-          this.display_value = result; //this.updateGuestHistory()
 
-          /* Save the result in database */
+          if (!this.checkSyntaxError()) {
+            this.equation = this.display_value;
+            var result = this.calculateResult(this.display_value);
+            this.result = result;
+            this.prev_display_value = this.equation + " = " + this.result;
+            this.display_value = result;
+            /* Save the result in database */
 
-          this.postHistory();
-          this.getHistory();
+            this.postHistory();
+            this.getHistory();
+          } else {
+            this.syntax_error = true;
+          }
+
           break;
 
         default:
@@ -2067,15 +2080,19 @@ __webpack_require__.r(__webpack_exports__);
 
       return val;
     },
-    numberOperatorSegmentation: function numberOperatorSegmentation(str) {
-      var has_priority = false;
-      var str_arr = str.split(" ");
+    splitEquation: function splitEquation() {
+      var str_arr = this.display_value.split(" ");
 
       if (str_arr[0] == "" || str_arr[0] == " ") {
         str_arr = str_arr.slice(1, str_arr.length);
       }
 
       str_arr = this.checkForNan(str_arr);
+      return str_arr;
+    },
+    numberOperatorSegmentation: function numberOperatorSegmentation(str) {
+      var has_priority = false;
+      var str_arr = this.splitEquation();
       var defined_operators_arr = ["+", "-", "/", "x", "%", "(", ")"];
       var operators_arr = [];
       var numbers_arr = [];
@@ -2149,9 +2166,9 @@ __webpack_require__.r(__webpack_exports__);
       return array;
     },
     solvePriority: function solvePriority(numbers, operators) {
-      console.log("inside solvePriority");
-      console.log(numbers);
-      console.log(operators);
+      // console.log("inside solvePriority")
+      // console.log(numbers)
+      // console.log(operators)
       var optr_arr_size = operators.length;
       var iterator = 0;
 
@@ -2247,7 +2264,11 @@ __webpack_require__.r(__webpack_exports__);
       return val;
     },
     calculator: function calculator() {
-      var data = this.numberOperatorSegmentation(this.display_value);
+      var data = this.numberOperatorSegmentation(this.display_value); // if(data['syntax_error']) {
+      //     return
+      //     window.stop()
+      // }
+
       var operators_arr = data['operators'];
       var numbers_arr = data['numbers'];
 
@@ -2305,6 +2326,56 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       return val;
+    },
+    checkSyntaxError: function checkSyntaxError() {
+      var str_arr = this.splitEquation();
+      var error_exist = false;
+      var iterator = 0;
+      var len = str_arr.length;
+
+      while (iterator < len) {
+        var _char = str_arr[iterator];
+        console.log('<<!>> char: ' + _char);
+
+        if (['+', '-', 'x', '/', '%'].includes(_char)) {
+          if (iterator == len - 1) {
+            error_exist = true;
+          } else if (iterator == 0) {
+            if (['+', 'x', '/', '%'].includer(_char)) {
+              error_exist = true;
+            }
+          } else {
+            if (iterator < len - 2) {
+              var next_char = str_arr[iterator + 1];
+
+              if (['+', '-', 'x', '/', '%'].includes(next_char)) {
+                error_exist = true;
+              }
+            }
+          }
+        }
+
+        if (error_exist) {
+          break;
+        }
+
+        iterator++;
+      }
+
+      if (!error_exist) {
+        var parenthesis_start_count = str_arr.filter(function (i) {
+          return i === '(';
+        }).length;
+        var parenthesis_end_count = str_arr.filter(function (i) {
+          return i === ')';
+        }).length;
+
+        if (parenthesis_start_count !== parenthesis_end_count) {
+          error_exist = true;
+        }
+      }
+
+      return error_exist;
     },
     getGuest: function getGuest() {
       var _this = this;
@@ -6871,7 +6942,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.container[data-v-625bc6ad] {\n    background: #181a1b;\n    color: #dad7d2;\n    font-family: 'Orbitron', sans-serif;\n}\ndiv.calculator[data-v-625bc6ad] {\n    margin-top: 60px;\n}\ndiv.display[data-v-625bc6ad] {\n    text-align: right;\n}\n.card-header h5[data-v-625bc6ad] {\n    font-weight: bold;\n}\ndiv.display p[data-v-625bc6ad]:first-child {\n    font-size: 12px;\n    min-height: 18px;\n}\ndiv.display p[data-v-625bc6ad]:last-child {\n    position: relative;\n    background: #17404d;\n    font-size: 28px;\n    line-height: 36px;\n    color: #fff;\n    padding: 4px 15px 0px 15px;\n    height: 36px;\n    overflow: hidden;\n}\ndiv.display span[data-v-625bc6ad] {\n    position: absolute;\n    right: 5px;\n}\ndiv.keys[data-v-625bc6ad] {\n    margin-top: 40px;\n    text-align: center;\n}\ndiv.keys button[data-v-625bc6ad] {\n    width: 23%;\n    margin-bottom: 13px;\n    background: #181a1b;\n    color: #e8e6e3;\n    border-radius: 5px;\n    border-color: #575757\n}\ndiv.keys button[data-v-625bc6ad]:hover {\n    cursor: pointer;\n}\ndiv.history ul[data-v-625bc6ad] {\n    list-style-type: none;\n    max-height: 315px;\n    overflow-y: scroll;\n    padding: 0px;\n}\n[data-v-625bc6ad]::-webkit-scrollbar {\n  width: 5px;\n  background:#17404d;\n}\n[data-v-625bc6ad]::-webkit-scrollbar-thumb {\n  background: #e8e6e3;\n}\ndiv.history ul li[data-v-625bc6ad] {\n    padding: 10px;\n    border-bottom: 1px solid #236073;\n}\n@media screen and (min-width: 425px) {\ndiv.card-header[data-v-625bc6ad] {\n        margin-top: 30px;\n}\ndiv.col-md-12[data-v-625bc6ad] {\n        margin-bottom: 0px !important;\n}\ndiv.calculator[data-v-625bc6ad] {\n        margin-top: 35px;\n}\n}\n", ""]);
+exports.push([module.i, "\n.container[data-v-625bc6ad] {\n    background: #181a1b;\n    color: #dad7d2;\n    font-family: 'Orbitron', sans-serif;\n}\ndiv.calculator[data-v-625bc6ad] {\n    margin-top: 60px;\n}\ndiv.display[data-v-625bc6ad] {\n    text-align: right;\n}\n.card-header h5[data-v-625bc6ad] {\n    font-weight: bold;\n}\ndiv.display p[data-v-625bc6ad]:first-child {\n    font-size: 12px;\n    min-height: 18px;\n}\ndiv.display p[data-v-625bc6ad]:last-child {\n    position: relative;\n    background: #17404d;\n    font-size: 28px;\n    line-height: 36px;\n    color: #fff;\n    padding: 4px 15px 0px 15px;\n    height: 36px;\n    overflow: hidden;\n}\ndiv.display p.error-message[data-v-625bc6ad] {\n    bottom: -15px;\n    font-size: 12px;\n    font-weight: bold;\n    background: red;\n    color: #000;\n    padding: 2px 5px;\n    width: 120px;\n    text-align: center;\n    height: 18px;\n    margin-bottom: 3px;\n    border-radius: 1em;\n}\ndiv.display span.pipe[data-v-625bc6ad] {\n    position: absolute;\n    right: 5px;\n}\ndiv.keys[data-v-625bc6ad] {\n    margin-top: 40px;\n    text-align: center;\n}\ndiv.keys button[data-v-625bc6ad] {\n    width: 23%;\n    margin-bottom: 13px;\n    background: #181a1b;\n    color: #e8e6e3;\n    border-radius: 5px;\n    border-color: #575757\n}\ndiv.keys button[data-v-625bc6ad]:hover {\n    cursor: pointer;\n}\ndiv.history ul[data-v-625bc6ad] {\n    list-style-type: none;\n    max-height: 315px;\n    overflow-y: scroll;\n    padding: 0px;\n}\n[data-v-625bc6ad]::-webkit-scrollbar {\n  width: 5px;\n  background:#17404d;\n}\n[data-v-625bc6ad]::-webkit-scrollbar-thumb {\n  background: #e8e6e3;\n}\ndiv.history ul li[data-v-625bc6ad] {\n    padding: 10px;\n    border-bottom: 1px solid #236073;\n}\n@media screen and (min-width: 425px) {\ndiv.card-header[data-v-625bc6ad] {\n        margin-top: 30px;\n}\ndiv.col-md-12[data-v-625bc6ad] {\n        margin-bottom: 0px !important;\n}\ndiv.calculator[data-v-625bc6ad] {\n        margin-top: 35px;\n}\n}\n", ""]);
 
 // exports
 
@@ -38362,9 +38433,25 @@ var render = function() {
           _c("div", { staticClass: "display" }, [
             _c("p", [_vm._v(" " + _vm._s(_vm.prev_display_value) + " ")]),
             _vm._v(" "),
+            this.syntax_error
+              ? _c("p", { staticClass: "error-message" }, [
+                  _vm._v(
+                    "\n                        " +
+                      _vm._s(_vm.syntax_error_message) +
+                      "\n                    "
+                  )
+                ])
+              : _vm._e(),
+            _vm._v(" "),
             _c("p", [
-              _vm._v(_vm._s(_vm.fixDisplayedEquation()) + " "),
-              _vm.display_pipe ? _c("span", [_vm._v("|")]) : _vm._e()
+              _vm._v(
+                "\n                        " +
+                  _vm._s(_vm.fixDisplayedEquation()) +
+                  " \n                        "
+              ),
+              _vm.display_pipe
+                ? _c("span", { staticClass: "pipe" }, [_vm._v("|")])
+                : _vm._e()
             ])
           ]),
           _vm._v(" "),

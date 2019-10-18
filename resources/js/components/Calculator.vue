@@ -9,7 +9,12 @@
                 <div class="calculator">
                     <div class="display">
                         <p> {{ prev_display_value }} </p>
-                        <p>{{ fixDisplayedEquation() }} <span v-if="display_pipe">|</span></p>
+                        <p class="error-message" v-if="this.syntax_error">
+                            {{ syntax_error_message }}
+                        </p>
+                        <p>
+                            {{ fixDisplayedEquation() }} 
+                            <span v-if="display_pipe" class="pipe">|</span></p>
                     </div>
                     <div class="keys">
                         <button @click="keyVal('(')">(</button>
@@ -66,6 +71,8 @@ export default {
             equation: "",
             result: "",
             prev_display_value: "",
+            syntax_error: false,
+            syntax_error_message: "Syntax Error",
             guest_history: [],
             display_has_number_now: false,
             site_url: "http://localhost:8000",
@@ -79,6 +86,7 @@ export default {
     props: ["ip"],
     methods: {
         keyVal: function(val) {
+            this.syntax_error = false
             var equation = this.display_value
 
             /** 
@@ -117,15 +125,18 @@ export default {
                     break
                 case "=":
                     this.display_has_number_now = false
-                    this.equation = this.display_value
-                    let result = this.calculateResult(this.display_value)
-                    this.result = result
-                    this.prev_display_value = this.equation + " = "+this.result
-                    this.display_value = result
-                    //this.updateGuestHistory()
-                    /* Save the result in database */
-                    this.postHistory()
-                    this.getHistory()
+                    if(!this.checkSyntaxError()) {
+                        this.equation = this.display_value
+                        let result = this.calculateResult(this.display_value)
+                        this.result = result
+                        this.prev_display_value = this.equation + " = "+this.result
+                        this.display_value = result
+                        /* Save the result in database */
+                        this.postHistory()
+                        this.getHistory()
+                    } else {
+                        this.syntax_error = true
+                    }   
                     break
                 default:
                     if(val >= 0 && val <=9) {
@@ -203,14 +214,18 @@ export default {
             }
             return val;
         },
-        numberOperatorSegmentation: function (str) {
-            var has_priority = false;
-
-            var str_arr = str.split(" ")
+        splitEquation: function() {
+            var str_arr = this.display_value.split(" ")
             if(str_arr[0]=="" || str_arr[0]==" ") {
                 str_arr = str_arr.slice(1, str_arr.length)
             }
             str_arr = this.checkForNan(str_arr)
+            return str_arr
+        },
+        numberOperatorSegmentation: function (str) {
+            var has_priority = false;
+
+            var str_arr = this.splitEquation()
 
             var defined_operators_arr = ["+","-","/","x","%","(",")"];
             var operators_arr = [];
@@ -284,9 +299,9 @@ export default {
             return array
         },
         solvePriority: function(numbers, operators) {
-            console.log("inside solvePriority")
-            console.log(numbers)
-            console.log(operators)
+            // console.log("inside solvePriority")
+            // console.log(numbers)
+            // console.log(operators)
             var optr_arr_size = operators.length;
             var iterator = 0;
             while(iterator < optr_arr_size) {
@@ -370,6 +385,11 @@ export default {
         calculator: function() {
             var data = this.numberOperatorSegmentation(this.display_value)
 
+            // if(data['syntax_error']) {
+            //     return
+            //     window.stop()
+            // }
+
             var operators_arr = data['operators']
             var numbers_arr = data['numbers']
 
@@ -433,6 +453,44 @@ export default {
                 val = this.calculateValue(numbers_arr, operators_arr)
             }
             return val
+        },
+        checkSyntaxError: function() {
+            var str_arr = this.splitEquation()
+            var error_exist = false
+            var iterator = 0
+            var len = str_arr.length
+            while(iterator < len) {
+                var char = str_arr[iterator]
+                console.log('<<!>> char: '+char)
+                if(['+','-','x','/','%'].includes(char)) {
+                    if(iterator == len-1) {
+                        error_exist = true
+                    } else if(iterator == 0) {
+                        if(['+','x','/','%'].includer(char)) {
+                            error_exist = true
+                        }
+                    } else {
+                        if(iterator < len-2) {
+                            var next_char = str_arr[iterator+1]
+                            if(['+','-','x','/','%'].includes(next_char)) {
+                                error_exist = true
+                            }
+                        }
+                    }
+                }
+                if(error_exist) {
+                    break
+                }
+                iterator++
+            }
+            if(!error_exist) {
+                var parenthesis_start_count = str_arr.filter(i=>i==='(').length
+                var parenthesis_end_count = str_arr.filter(i=>i===')').length
+                if(parenthesis_start_count !== parenthesis_end_count) {
+                    error_exist = true
+                } 
+            }
+            return error_exist
         },
         getGuest: function() {
             let axiosConfig = {
@@ -539,7 +597,20 @@ div.display p:last-child {
     height: 36px;
     overflow: hidden;
 }
-div.display span {
+div.display p.error-message {
+    bottom: -15px;
+    font-size: 12px;
+    font-weight: bold;
+    background: red;
+    color: #000;
+    padding: 2px 5px;
+    width: 120px;
+    text-align: center;
+    height: 18px;
+    margin-bottom: 3px;
+    border-radius: 1em;
+}
+div.display span.pipe {
     position: absolute;
     right: 5px;
 }
